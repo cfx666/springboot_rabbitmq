@@ -21,6 +21,7 @@ public class TtlQueueConfig {
     //普通队列的名字
     public static final String QUEUE_A = "QA";
     public static final String QUEUE_B = "QB";
+    public static final String QUEUE_C = "QC";
     //死信队列的名字
     public static final String DEAD_LETTER_QUEUE = "QD";
 
@@ -39,7 +40,7 @@ public class TtlQueueConfig {
     //声明普通队列 TTL 10s
     @Bean("queueA")
     public Queue queueA(){
-        Map<String, Object> arguments = new HashMap<>();
+        Map<String, Object> arguments = new HashMap<>(3);
         //设置死信交换机
         arguments.put("x-dead-letter-exchange",Y_DEAD_LETTER_EXCHANGE);
         //设置死信routingkey
@@ -52,14 +53,25 @@ public class TtlQueueConfig {
     //声明普通队列 TTL 40s
     @Bean("queueB")
     public Queue queueB(){
-        Map<String, Object> arguments = new HashMap<>();
+        Map<String, Object> arguments = new HashMap<>(3);
         //设置死信交换机
         arguments.put("x-dead-letter-exchange",Y_DEAD_LETTER_EXCHANGE);
-        //设置死信routingkey
+        //设置死信RoutingKey
         arguments.put("x-dead-letter-routing-key","YD");
         //设置ttl  单位是ms
         arguments.put("x-message-ttl",40000);
         return QueueBuilder.durable(QUEUE_B).withArguments(arguments).build();
+    }
+
+    //声明普通队列QC
+    @Bean("queueC")
+    public Queue queueC(){
+        Map<String, Object> arguments = new HashMap<>(3);
+        //设置死信交换机
+        arguments.put("x-dead-letter-exchange",Y_DEAD_LETTER_EXCHANGE);
+        //设置死信RoutingKey
+        arguments.put("x-dead-letter-routing-key","YD");
+        return QueueBuilder.durable(QUEUE_C).withArguments(arguments).build();
     }
 
     //声明死信队列
@@ -87,5 +99,12 @@ public class TtlQueueConfig {
     public Binding queueDBingdingY(@Qualifier("queueD") Queue queueD,
                                    @Qualifier("yExchange") Exchange yExchange){
         return BindingBuilder.bind(queueD).to(yExchange).with("YD").noargs();
+    }
+
+    //绑定
+    @Bean()
+    public Binding queueCBingdingX(@Qualifier("queueC") Queue queueC,
+                                   @Qualifier("xExchange") Exchange xExchange){
+        return BindingBuilder.bind(queueC).to(xExchange).with("XC").noargs();
     }
 }
